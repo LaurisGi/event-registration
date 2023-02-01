@@ -47,8 +47,9 @@ const mysqlConfig = {
       });
 });
 
-app.get('/login', (req, res) => {
-  const { id } = req.params;
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  console.log(req.body);
 connection.execute('SELECT * FROM users', (err, users) => {
   res.send(users);
  });
