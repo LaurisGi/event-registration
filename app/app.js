@@ -20,13 +20,6 @@ const mysqlConfig = {
   const connection = mysql.createConnection(mysqlConfig);
 
 
-  app.get('/login', (req, res) => {
-    const { id } = req.params;
-  connection.execute('SELECT * FROM users', (err, users) => {
-    res.send(users);
-   });
-  });
-
   app.post('/register', (req, res) =>  {
     const { name, surname, email, password } = req.body;
     connection.execute(
@@ -52,6 +45,13 @@ const mysqlConfig = {
             });
         }
       });
+});
+
+app.get('/login', (req, res) => {
+  const { id } = req.params;
+connection.execute('SELECT * FROM users', (err, users) => {
+  res.send(users);
+ });
 });
 
 const PORT = 8000;
