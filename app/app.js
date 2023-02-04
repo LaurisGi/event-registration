@@ -10,7 +10,42 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const createToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, {expiresIn: '3d'});
+}
 
+const getUserFromToken = (req) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
+  return user;
+}
+
+const verifyToken = (req, res, next) => {
+  try {
+      getUserFromToken(req);
+      next();
+  } catch(e) {
+      res.send({ error: 'Invalid Token' });
+  }
+}
+//! Kaip parasyti kad veiktu per middleware?
+app.get('/atendees', verifyToken, (req, res) => {
+  const user = getUserFromToken(req);
+  
+  connection.execute('SELECT * FROM event WHERE userId=?', [user.id], (err, events) => {
+      res.send(events);
+  });
+});
+
+const verifyUser = (req, res) => {
+  try {
+      const token = req.headers.authorization.split(' ')[1];
+      const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      res.send(user);
+  } catch(e) {
+      res.send({ error: 'Invalid Token' });
+  }
+};
 
 // const mysqlConfig = {
 //     host: process.env.MYSQL_HOST,
@@ -27,6 +62,9 @@ app.use(express.json());
   // };
 
 app.use('/user', userRoutes)
+// app.use('/event', userRoutes)
+
+
 
 
 //   app.post('/register', (req, res) =>  {

@@ -8,6 +8,69 @@ const sendErrorResponse = (res, statusCode, message) => {
     return res.status(statusCode).json({ message });
   };
 
+  const createToken = (id) => {
+    return jwt.sign({ id}, process.env.JWT_SECRET_KEY, {expiresIn: '3d'});
+  }
+
+
+  //! tokeno verifikacija
+
+  // const getUserFromToken = (req) => {
+  //   const token = req.headers.authorization.split(' ')[1];
+  //   const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
+  //   return user;
+  // }
+  
+  // const verifyToken = (req, res, next) => {
+  //   try {
+  //       getUserFromToken(req);
+  //       next();
+  //   } catch(e) {
+  //       res.send({ error: 'Invalid Token' });
+  //   }
+  // }
+  
+  // app.get('/expenses', verifyToken, (req, res) => {
+  //   const user = getUserFromToken(req);
+    
+  //   connection.execute('SELECT * FROM users WHERE userId=?', [user.id], (err, users) => {
+  //       res.send(users);
+  //   });
+  // });
+
+    //! tokeno verifikacija
+
+//   const createToken = (id) => {
+//     return jwt.sign({ id }, process.env.JWT_SECRET_KEY, {expiresIn: '3d'});
+//   }
+
+//   const getUserFromToken = (req) => {
+//     const token = req.headers.authorization.split(' ')[1];
+//     const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
+//     return user;
+// }
+
+// const verifyToken = (req, res, next) => {
+//   try {
+//       getUserFromToken(req);
+//       next();
+//   } catch(e) {
+//       res.send({ error: 'Invalid Token' });
+//   }
+// }
+//!! pakeisti vieta i eventControleri
+// app.get('/events', verifyToken, (req, res) => {
+//   const user = getUserFromToken(req);
+  
+//   connection.execute('SELECT * FROM event WHERE userId=?', [user.id], (err, events) => {
+//       res.send(events);
+//   });
+// });
+
+
+
+
+
 const loginUser = (req, res) => {
     const { email, password } = req.body;
     connection.query(
@@ -23,7 +86,8 @@ const loginUser = (req, res) => {
             const isPasswordCorrect = bcrypt.compareSync(password, passwordHash);
             if (isPasswordCorrect) {
               const { id, email } = result[0];
-              const token = jwt.sign({ id, email }, process.env.JWT_SECRET_KEY);
+              const token = createToken(id)
+              console.log(token)
               return res.json({ token, id, email });
             } else {
               return sendErrorResponse(res, 401, 'Incorrect email or password');
@@ -53,11 +117,26 @@ const loginUser = (req, res) => {
               if (err) {
                 sendErrorResponse(res, 500, 'There was a problem registering, please try again later');
               } else {
-                res.status(200).send({message: 'OK'});
+                res.status(200).send({message: 'Registration Successful. Please login'});
               }
             });
         }
       });
 };
 
-module.exports = { loginUser, registerUser }
+  //! tokeno verifikacija
+
+// const verifyUser = (req, res) => {
+//   try {
+//       const token = req.headers.authorization.split(' ')[1];
+//       const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
+//       res.send(user);
+//   } catch(e) {
+//       res.send({ error: 'Invalid Token' });
+//   }
+// };
+  //! tokeno verifikacija
+module.exports = { loginUser, registerUser
+  //  getAtendees 
+  // verifyUser 
+}
