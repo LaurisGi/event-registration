@@ -25,7 +25,7 @@ export const useLogin = () => {
         }
         if (response.ok) {
         const { token, id, email } = json;
-            localStorage.setItem(LOCAL_STORAGE_JWT_TOKEN_KEY, token);
+            localStorage.setItem(LOCAL_STORAGE_JWT_TOKEN_KEY, JSON.stringify(json));
             setError(json.message)
 
             dispatch({type: 'LOGIN', payload: json})

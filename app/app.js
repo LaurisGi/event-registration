@@ -2,17 +2,17 @@
 const express = require('express');
 // const bcrypt = require('bcrypt');
 const cors = require('cors');
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const userRoutes = require('./routes/user');
+const { createConnection } = require('./db');
+
+connection = createConnection();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, {expiresIn: '3d'});
-}
 
 const getUserFromToken = (req) => {
   const token = req.headers.authorization.split(' ')[1];
@@ -29,13 +29,45 @@ const verifyToken = (req, res, next) => {
   }
 }
 //! Kaip parasyti kad veiktu per middleware?
-app.get('/atendees', verifyToken, (req, res) => {
+app.get('/attendees', verifyToken, (req, res) => {
   const user = getUserFromToken(req);
   
   connection.execute('SELECT * FROM event WHERE userId=?', [user.id], (err, events) => {
       res.send(events);
   });
 });
+
+app.post('/attendees', (req, res) => {
+  const {name, surname, email, phone, userid} = req.body;
+  connection.query('INSERT INTO event (name, surname, email, phone, userId) VALUES (?, ?, ?,?, ?)', [name, surname, email, phone, userid], (error, results) => {
+    console.log(`User with userid:${userid} added to expenses list`);
+  });
+    connection.query('SELECT * FROM event WHERE userId=?', [userid], (error, results) => {
+      if (error) throw error;
+      res.json(results);
+    });
+})
+
+app.delete('/attendees/:id', verifyToken, (req, res) => {
+  const { id } = req.params;
+  const { id: userid } = getUserFromToken(req);
+
+  connection.execute(
+      'DELETE FROM event WHERE id=? AND userid=?',
+      [id, userid],
+      () => {
+          connection.execute(
+              'SELECT * FROM event WHERE userId=?', 
+              [userid], 
+              (err, expenses) => {
+                  res.send(expenses);
+              }
+          )
+      }
+  )
+});
+
+
 
 const verifyUser = (req, res) => {
   try {
@@ -118,14 +150,15 @@ app.use('/user', userRoutes)
 //   );
 // });
 
-// app.get('/token/verify', (req, res) => {
-//   try {
-//       const token = req.headers.authorization.split(' ')[1];
-//       const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
-//       res.send(user);
-//   } catch(e) {
-//       res.send({ error: 'Invalid Token' });
-//   }
-// });
+app.get('/token/verify', (req, res) => {
+  try {
+      const token = req.headers.authorization.split(' ')[1];
+      const user = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      res.send(user); console.log(headers.authorization);
+  } catch(e) {
+      res.send({ error: 'TOken Token' });
+      console.log(res)
+  }
+});
 
 app.listen(process.env.PORT, () => console.log(`Express server running on PORT:${process.env.PORT}`));

@@ -3,14 +3,18 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import  { BrowserRouter } from 'react-router-dom'
+// import { AttendeesContext } from './components/context/attendeesContext1';
 import { AuthContextProvider } from './components/context/AuthContext';
+import { AttendeesContext } from './components/context/AttendeesContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
       <BrowserRouter>
         <AuthContextProvider>
-          <App />
+          <AttendeesContext.Provider>
+            <App />
+          </AttendeesContext.Provider>
         </AuthContextProvider>
       </BrowserRouter>
   </React.StrictMode>

@@ -69,35 +69,64 @@ const sendErrorResponse = (res, statusCode, message) => {
 
 
 
+// !veike@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+// const loginUser = (req, res) => {
+//     const { email, password } = req.body;
+//     connection.query(
+//       `SELECT * FROM users WHERE email = '${email}'`,
+//       (error, result) => {
+//         if (error) {
+//           return sendErrorResponse(res, 500, 'An error occurred' );
+//         } else {
+//           if (!result.length) {
+//             return sendErrorResponse(res, 401, 'Incorrect email or password');
+//           } else {
+//             const passwordHash = result[0].password;
+//             const isPasswordCorrect = bcrypt.compareSync(password, passwordHash);
+//             if (isPasswordCorrect) {
+//               const { id, email } = result[0];
+//               const token = createToken(id, email)
+//               console.log(token)
+//               // return res.json({ token, id, email });
+//               return res.send({ token, id, email });
+//             } else {
+//               return sendErrorResponse(res, 401, 'Incorrect email or password');
+//             }
+//           }
+//         }
+//       }
+//     );
+//   };
+
+  
+// !veike@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 const loginUser = (req, res) => {
-    const { email, password } = req.body;
-    connection.query(
-      `SELECT * FROM users WHERE email = '${email}'`,
-      (error, result) => {
-        if (error) {
-          return sendErrorResponse(res, 500, 'An error occurred' );
+  const { email, password } = req.body;
+  connection.query(
+    `SELECT * FROM users WHERE email = '${email}'`,
+    (error, result) => {
+      if (error) {
+        return sendErrorResponse(res, 500, 'An error occurred' );
+      } else {
+        if (!result.length) {
+          return sendErrorResponse(res, 401, 'Incorrect email or password');
         } else {
-          if (!result.length) {
-            return sendErrorResponse(res, 401, 'Incorrect email or password');
+          const passwordHash = result[0].password;
+          const isPasswordCorrect = bcrypt.compareSync(password, passwordHash);
+          if (isPasswordCorrect) {
+            const {id, email} = result[0];
+            const token = jwt.sign({id}, process.env.JWT_SECRET_KEY);
+            res.send({token, id, email});
           } else {
-            const passwordHash = result[0].password;
-            const isPasswordCorrect = bcrypt.compareSync(password, passwordHash);
-            if (isPasswordCorrect) {
-              const { id, email } = result[0];
-              const token = createToken(id)
-              console.log(token)
-              return res.json({ token, id, email });
-            } else {
-              return sendErrorResponse(res, 401, 'Incorrect email or password');
-            }
+            return sendErrorResponse(res, 401, 'Incorrect email or password');
           }
         }
       }
-    );
-  };
-
+    }
+  );
+};
 
   const registerUser = (req, res) =>  {
     const { name, surname, email, password } = req.body;
